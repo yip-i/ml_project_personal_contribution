@@ -5,6 +5,10 @@ from sklearn.cross_decomposition import PLSRegression
 from sklearn.model_selection import train_test_split
 import datetime as dt
 import matplotlib as plt
+from sklearn.metrics import mean_squared_error
+from sklearn import model_selection
+from sklearn.preprocessing import scale
+
 
 #https://scikit-learn.org/stable/auto_examples/cross_decomposition/plot_pcr_vs_pls.html
 def pcr_regression(X, y):
@@ -15,6 +19,23 @@ def pcr_regression(X, y):
         pls.fit(X_train, y_train)
         print(f"I = {i}")
         print(pls.score(X_test, y_test))
+
+#http://www.science.smith.edu/~jcrouser/SDS293/labs/lab11-py.html
+def pcr_cross_val(X, y):
+    n = len(X)
+
+    # 10-fold CV, with shuffle
+    kf_10 = model_selection.KFold(n_splits=10, shuffle=True, random_state=1)
+
+    mse = []
+
+    for i in np.arange(1, 20):
+        pls = PLSRegression(n_components=i)
+        score = model_selection.cross_val_score(pls, X, y, cv=kf_10
+                                                ).mean()
+        mse.append(-score)
+    print(mse)
+
 
 def main():
     data = pd.read_csv('owid-covid-data.csv')
@@ -37,6 +58,7 @@ def main():
     uk_data = uk_data.drop("new_cases_smoothed_per_million", axis = 1)
 
     pcr_regression(uk_data, num_cases)
+    pcr_cross_val(uk_data, num_cases)
     print(uk_data.columns)
 
 if __name__=="__main__":
