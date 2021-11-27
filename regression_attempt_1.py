@@ -32,7 +32,7 @@ def main():
 
     y = data[['new_cases']].copy()
     x = x.drop('new_cases', axis = 1)
-
+    print(x)
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
     lin_model = LinearRegression(n_jobs=4)
@@ -59,5 +59,5 @@ def main():
     print("Ridge score regression")
     print(l2_r2)
 
-
-main()
+if __name__=="__main__":
+    main()
