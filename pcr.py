@@ -8,6 +8,13 @@ import matplotlib as plt
 from sklearn.metrics import mean_squared_error
 from sklearn import model_selection
 from sklearn.preprocessing import scale
+from sklearn.metrics import r2_score
+from sklearn.linear_model import Ridge
+from sklearn.pipeline import make_pipeline
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+
 
 
 #https://scikit-learn.org/stable/auto_examples/cross_decomposition/plot_pcr_vs_pls.html
@@ -36,6 +43,29 @@ def pcr_cross_val(X, y):
         mse.append(-score)
     print(mse)
 
+def l2(X, y):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+    l2_lin_model = Ridge(fit_intercept=0)
+    l2_lin_model.fit(X_train, y_train)
+    l2_predict = l2_lin_model.predict(X_test)
+
+    l2_r2 = r2_score(y_pred=l2_predict, y_true=y_test)
+    print("Ridge score regression")
+    print(l2_r2)
+
+def pca(X,y):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+    for i in range(1, 40, 1):
+        pcr = make_pipeline(StandardScaler(), PCA(n_components=i), Ridge())
+        pcr.fit(X_train, y_train)
+        pca = pcr.named_steps["pca"]
+        pca_predict = pcr.predict(X_test)
+        pca_r2 = r2_score(y_pred = pca_predict, y_true= y_test)
+        print(f"PCA score. Components:{i}")
+        print(pca_r2)
+
 
 def main():
     data = pd.read_csv('owid-covid-data.csv')
@@ -56,9 +86,14 @@ def main():
     uk_data = uk_data.drop("new_cases_smoothed", axis = 1)
     uk_data = uk_data.drop("new_cases_per_million", axis = 1)
     uk_data = uk_data.drop("new_cases_smoothed_per_million", axis = 1)
+    uk_data = uk_data.drop("tests_per_case", axis = 1)
 
     pcr_regression(uk_data, num_cases)
-    pcr_cross_val(uk_data, num_cases)
+    #pcr_cross_val(uk_data, num_cases)
+
+    l2(uk_data, num_cases)
+
+    pca(uk_data, num_cases)
     print(uk_data.columns)
 
 if __name__=="__main__":
