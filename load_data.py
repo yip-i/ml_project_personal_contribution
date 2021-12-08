@@ -39,7 +39,8 @@ def main():
     nan_columns = data.columns[data.isnull().any()]
     print(nan_columns)
 
-main()
+if __name__=="__main__":
+    main()
 
 
 
