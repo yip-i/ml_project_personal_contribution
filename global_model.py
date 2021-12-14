@@ -17,16 +17,26 @@ from sklearn.linear_model import LinearRegression
 def pls_regression(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.8)
 
+    std = y_test.std()
+    std = std["new_cases"]
+    print(f"train max: {y_train.max()}")
+    print(f"train min: {y_train.min()}")
+
+    print(f"train std: {y_train.std()}")
+    print(f"test std: {std}")
     for i in range(1, 40, 3):
         pls = PLSRegression(n_components=i)
         pls.fit(X_train, y_train)
         print(f"I = {i}")
-        print(pls.score(X_test, y_test))
+        y_pred = pls.predict(X_test)
+
+        print(f"MSE: {mean_squared_error(y_true = y_test, y_pred = y_pred, squared=False)}")
+        #print(pls.score(X_test, y_test))
 
 
 def main():
     data = pd.read_csv('owid-covid-data.csv')
-    global_data = data[data['iso_code'].notna()]
+    global_data = data[data['continent'].notna()]
 
     global_data = global_data.fillna(0)
 

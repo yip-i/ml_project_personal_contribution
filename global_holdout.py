@@ -18,15 +18,22 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 
 def pls_regression(X_train, X_test, y_train, y_test):
+    std = y_test.std()
+    std = std["new_cases"]
 
+    print(f"train std: {y_train.std()}")
+    print(f"test std: {std}")
     for i in range(1, 40, 3):
         pls = PLSRegression(n_components=i)
         pls.fit(X_train, y_train)
         print(f"I = {i}")
-        print(pls.score(X_test, y_test))
+        y_pred = pls.predict(X_test)
+
+        print(f"MSE: {mean_squared_error(y_true = y_test, y_pred = y_pred, squared=False)}")
 
 
 def main():
+    shift_var = -31
     data = pd.read_csv('owid-covid-data.csv')
     global_data = data[data['iso_code'].notna()]
 
@@ -39,11 +46,18 @@ def main():
     global_data['date'] = pd.to_datetime(global_data['date'])
     global_data['date'] = global_data['date'].map(dt.datetime.toordinal)
 
-    # Need to drop columns related to new cases.
-    global_data = global_data.drop("new_cases_smoothed", axis=1)
-    global_data = global_data.drop("new_cases_per_million", axis=1)
-    global_data = global_data.drop("new_cases_smoothed_per_million", axis=1)
+    # Test shifting the data.
+    global_data['new_cases_smoothed'] = global_data['new_cases_smoothed'].shift(shift_var)
+
+
+    global_data['new_cases_per_million'] = global_data["new_cases_per_million"].shift(shift_var)
+
+    global_data['new_cases_smoothed_per_million'] = global_data["new_cases_smoothed_per_million"].shift(shift_var)
+
     global_data = global_data.drop("tests_per_case", axis=1)
+
+    global_data = global_data.fillna(0)
+
 
     #Test dropping components
     global_data = global_data.drop("total_cases", axis=1)
